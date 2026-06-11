@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net;
 using System.Linq;
@@ -138,7 +138,19 @@ namespace CornerIRCRelay
 
             // Connect to IRC server
             Console.WriteLine("Connecting to IRC...");
-            irc.Connect(config.IRCIp, config.IRCport);
+	    // Stupid dumb poopoo hack because of a Linux bug
+	    string IrcAddress = config.IRCIp;
+	    try {
+		var addresses = await System.Net.Dns.GetHostAddressesAsync(config.IRCIp);
+		IrcAddress = addresses[0].ToString();
+		Console.WriteLine($"asbestos DNS: {config.IRCIp} -> {IrcAddress}");
+	    }
+	    catch (Exception explode) {
+		Console.WriteLine($"DNS explosion: {explode.Message}");
+		return;
+	    }
+		
+	    irc.Connect(IrcAddress, config.IRCport);
 
             // Log in with the desired nickname
             irc.Login(config.IRCNickname, config.IRCNickname);
